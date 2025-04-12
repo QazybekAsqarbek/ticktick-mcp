@@ -1,0 +1,6 @@
+[submodule "lib/ticktick-api-client"]
+	path = lib/ticktick-api-client
+	url = https://github.com/Cyfine/TickTick-Dida365-API-Client.git
+[submodule "lib/lang-ticktick"]
+	path = lib/lang-ticktick
+	url = https://github.com/Cyfine/Lang-TickTick.git

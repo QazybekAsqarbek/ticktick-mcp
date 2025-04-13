@@ -96,7 +96,7 @@ class TickTickAPI:
                 batch = projects[i:i + self.batch_size]
                 for project in batch:
                     # Skip if project_id is specified and doesn't match
-                    if project_id is not None and project.id != project_id:
+                    if project_id is not None and str(project.id) != project_id:
                         continue
                         
                     try:
@@ -105,7 +105,13 @@ class TickTickAPI:
                             self.client.get_project_with_data,
                             project_id=project.id
                         )
-                        all_tasks.extend(project_data.tasks)
+                        # Convert tasks to dictionaries and add project ID
+                        project_tasks = []
+                        for task in project_data.tasks:
+                            task_dict = vars(task)  # Convert task object to dictionary
+                            task_dict["projectId"] = str(project.id)  # Add project ID
+                            project_tasks.append(task_dict)
+                        all_tasks.extend(project_tasks)
                         logger.info(f"Retrieved tasks for project {project.name}")
                     except Exception as e:
                         logger.error(f"Error getting tasks for project {project.name}: {str(e)}")

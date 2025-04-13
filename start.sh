@@ -10,4 +10,4 @@ done
 echo "MongoDB is up - starting MCP interface"
 
 # Start the MCP interface
-python mcp_interface.py 
+python -c "import asyncio; from mcp_interface import main; asyncio.run(main())" 

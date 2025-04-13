@@ -40,7 +40,7 @@ enter_container() {
 # Function to sync data
 sync_data() {
     echo "Syncing data from TickTick..."
-    docker-compose --env-file .env exec app python manage_db.py
+    docker-compose --env-file .env exec app python -c "import asyncio; from manage_db import main; asyncio.run(main())"
 }
 
 # Main script

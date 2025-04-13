@@ -147,7 +147,7 @@ class MCPInterface:
         except Exception as e:
             self.console.print(f"[red]Error getting project tasks: {str(e)}[/red]")
     
-    def run_cli(self):
+    async def run_cli(self):
         """Run the CLI interface"""
         while True:
             self.console.print("\n[bold]TickTick MCP Interface[/bold]")
@@ -161,10 +161,10 @@ class MCPInterface:
             choice = Prompt.ask("Select an option", choices=["1", "2", "3"])
             
             if choice == "1":
-                self.get_project_tasks()
+                await self.get_project_tasks()
             elif choice == "2":
                 project_name = Prompt.ask("Enter project name")
-                self.get_project_tasks(project_name)
+                await self.get_project_tasks(project_name)
             elif choice == "3":
                 break
     

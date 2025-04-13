@@ -82,12 +82,12 @@ class TickTickManager:
         return True
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def sync_tasks(self, project_id: Optional[str] = None, cache_duration: int = 300) -> None:
+    async def sync_tasks(self, project_id: Optional[str] = None, cache_duration: int = 86400) -> None:
         """Sync tasks from TickTick API
         
         Args:
             project_id: Optional project ID to sync tasks for
-            cache_duration: Cache duration in seconds (default: 5 minutes)
+            cache_duration: Cache duration in seconds (default: 1 day)
         """
         try:
             # Check cache first
@@ -157,11 +157,11 @@ class TickTickManager:
             self.logger.error(f"Error syncing notes: {str(e)}")
             raise
     
-    async def sync_all(self, cache_duration: int = 300) -> None:
+    async def sync_all(self, cache_duration: int = 86400) -> None:
         """Sync all data from TickTick API
         
         Args:
-            cache_duration: Cache duration in seconds (default: 5 minutes)
+            cache_duration: Cache duration in seconds (default: 1 day)
         """
         try:
             # Sync projects first
@@ -202,11 +202,11 @@ async def main():
     try:
         # First try a partial sync
         try:
-            await manager.sync_all(cache_duration=300)
+            await manager.sync_all(cache_duration=86400)
         except Exception as e:
             logger.warning(f"Partial sync failed, attempting full sync: {str(e)}")
             # If partial sync fails, try a full sync
-            await manager.sync_all(cache_duration=300)
+            await manager.sync_all(cache_duration=86400)
     except Exception as e:
         logger.error(f"Fatal error: {str(e)}")
         sys.exit(1)

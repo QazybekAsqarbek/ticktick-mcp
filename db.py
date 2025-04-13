@@ -62,12 +62,12 @@ class TickTickDB:
             return dict(item)
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def save_tasks(self, tasks: List[Any], cache_duration: int = 300) -> None:
+    async def save_tasks(self, tasks: List[Any], cache_duration: int = 86400) -> None:
         """Save tasks to database with caching
         
         Args:
             tasks: List of task objects or dictionaries
-            cache_duration: Cache duration in seconds (default: 5 minutes)
+            cache_duration: Cache duration in seconds (default: 1 day)
         """
         try:
             current_time = datetime.utcnow()
@@ -95,12 +95,12 @@ class TickTickDB:
             raise
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def save_projects(self, projects: List[Any], cache_duration: int = 3600) -> None:
+    async def save_projects(self, projects: List[Any], cache_duration: int = 86400) -> None:
         """Save projects to database with caching
         
         Args:
             projects: List of project objects or dictionaries
-            cache_duration: Cache duration in seconds (default: 1 hour)
+            cache_duration: Cache duration in seconds (default: 1 day)
         """
         try:
             current_time = datetime.utcnow()
@@ -121,12 +121,12 @@ class TickTickDB:
             raise
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def save_notes(self, notes: List[Any], cache_duration: int = 300) -> None:
+    async def save_notes(self, notes: List[Any], cache_duration: int = 86400) -> None:
         """Save notes to database with caching
         
         Args:
             notes: List of note objects or dictionaries
-            cache_duration: Cache duration in seconds (default: 5 minutes)
+            cache_duration: Cache duration in seconds (default: 1 day)
         """
         try:
             current_time = datetime.utcnow()

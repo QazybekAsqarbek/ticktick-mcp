@@ -26,17 +26,35 @@ class Note:
 class TickTickAPI:
     def __init__(self):
         load_dotenv()
-        self.client = Dida365Client(
-            client_id=os.getenv("TICKTICK_CLIENT_ID"),
-            client_secret=os.getenv("TICKTICK_CLIENT_SECRET"),
-            service_type=ServiceType.TICKTICK,
-            redirect_uri=os.getenv("TICKTICK_REDIRECT_URI", "http://localhost:8080/callback"),
-            save_to_env=True
-        )
         
-        # Authenticate if needed
-        if not self.client.auth.token:
-            self.client.authenticate()
+        # Store our custom environment variables before loading dida365
+        custom_env = {
+            "DEEPSEEK_API_KEY": os.getenv("DEEPSEEK_API_KEY"),
+            "MONGODB_URI": os.getenv("MONGODB_URI")
+        }
+        
+        # Temporarily remove custom environment variables
+        for key in custom_env:
+            if key in os.environ:
+                del os.environ[key]
+        
+        try:
+            # Initialize client with only the required environment variables
+            self.client = Dida365Client(
+                client_id=os.getenv("DIDA365_CLIENT_ID"),
+                client_secret=os.getenv("DIDA365_CLIENT_SECRET"),
+                service_type=ServiceType.TICKTICK,
+                redirect_uri=os.getenv("DIDA365_REDIRECT_URI", "http://localhost:8080/callback")
+            )
+            
+            # Authenticate if needed
+            if not self.client.auth.token:
+                self.client.authenticate()
+        finally:
+            # Restore custom environment variables
+            for key, value in custom_env.items():
+                if value is not None:
+                    os.environ[key] = value
         
         # Rate limiting settings
         self.rate_limit_delay = 2.0  # seconds between requests

@@ -1,6 +1,9 @@
-python-dotenv
+python-dotenv==1.0.0
 python-telegram-bot
-pymongo
-openai
-dida365
-tenacity>=8.2.3
+pymongo==4.6.1
+openai==1.12.0
+dida365==0.1.0
+tenacity==8.2.3
+rich==13.7.0
+pydantic==2.6.1
+asyncio==3.4.3

@@ -34,9 +34,7 @@ The system consists of three main components:
 1. **Environment Variables**
    Create a `.env` file with the following variables:
    ```
-   TICKTICK_CLIENT_ID=your_client_id
-   TICKTICK_CLIENT_SECRET=your_client_secret
-   TICKTICK_REDIRECT_URI=http://localhost:8080/callback
+   DIDA...
    MONGODB_URI=mongodb://admin:password@mongodb:27017/
    ```
 

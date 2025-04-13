@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import logging
 from typing import Dict, List, Any, Optional
 import os
-from dotenv import load_dotenv
+from settings import settings
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -16,13 +16,13 @@ class TickTickDB:
         """Initialize MongoDB connection
         
         Args:
-            mongo_uri: MongoDB connection URI, defaults to environment variable
+            mongo_uri: MongoDB connection URI, defaults to settings
         """
-        load_dotenv()
-        mongo_uri = mongo_uri or os.getenv("MONGODB_URI", "mongodb://admin:password@mongodb:27017/")
+        mongo_uri = mongo_uri or settings.MONGODB_URI
+        db_name = settings.MONGODB_DB_NAME
         
         self.client = MongoClient(mongo_uri)
-        self.db = self.client["ticktick"]
+        self.db = self.client[db_name]
         self.logger = logging.getLogger(__name__)
         
         # Create indexes for better query performance
@@ -73,16 +73,23 @@ class TickTickDB:
             current_time = datetime.utcnow()
             cache_expiry = current_time + timedelta(seconds=cache_duration)
             
+            self.logger.info(f"Saving {len(tasks)} tasks with cache duration of {cache_duration} seconds")
+            self.logger.info(f"Cache will expire at {cache_expiry}")
+            
             for task in tasks:
                 task_dict = self._convert_to_dict(task)
                 task_dict["last_updated"] = current_time
                 task_dict["cache_expiry"] = cache_expiry
+                
+                # Log task details
+                self.logger.debug(f"Saving task: ID={task_dict.get('id')}, Title={task_dict.get('title')}, Project={task_dict.get('projectId')}")
+                
                 self.db.tasks.update_one(
                     {"id": task_dict["id"]},
                     {"$set": task_dict},
                     upsert=True
                 )
-            self.logger.info(f"Saved {len(tasks)} tasks with cache expiry at {cache_expiry}")
+            self.logger.info(f"Successfully saved {len(tasks)} tasks with cache expiry at {cache_expiry}")
         except Exception as e:
             self.logger.error(f"Error saving tasks: {str(e)}")
             raise
@@ -150,12 +157,21 @@ class TickTickDB:
             List of task dictionaries
         """
         try:
-            query = {"cache_expiry": {"$gt": datetime.utcnow()}}
+            query = {}
             if project_id is not None:
                 query["projectId"] = project_id
+                self.logger.info(f"Querying tasks for project ID: {project_id}")
             
             tasks = list(self.db.tasks.find(query))
-            self.logger.info(f"Retrieved {len(tasks)} tasks from cache")
+            self.logger.info(f"Retrieved {len(tasks)} tasks from database")
+            
+            # Log cache expiry info
+            for task in tasks:
+                if "cache_expiry" in task:
+                    self.logger.debug(f"Task {task.get('id')} cache expires at {task['cache_expiry']}")
+                else:
+                    self.logger.debug(f"Task {task.get('id')} has no cache expiry")
+            
             return tasks
         except Exception as e:
             self.logger.error(f"Error getting tasks: {str(e)}")
@@ -169,10 +185,8 @@ class TickTickDB:
             List of project dictionaries
         """
         try:
-            projects = list(self.db.projects.find({
-                "cache_expiry": {"$gt": datetime.utcnow()}
-            }))
-            self.logger.info(f"Retrieved {len(projects)} projects from cache")
+            projects = list(self.db.projects.find())
+            self.logger.info(f"Retrieved {len(projects)} projects from database")
             return projects
         except Exception as e:
             self.logger.error(f"Error getting projects: {str(e)}")
@@ -186,10 +200,8 @@ class TickTickDB:
             List of note dictionaries
         """
         try:
-            notes = list(self.db.notes.find({
-                "cache_expiry": {"$gt": datetime.utcnow()}
-            }))
-            self.logger.info(f"Retrieved {len(notes)} notes from cache")
+            notes = list(self.db.notes.find())
+            self.logger.info(f"Retrieved {len(notes)} notes from database")
             return notes
         except Exception as e:
             self.logger.error(f"Error getting notes: {str(e)}")

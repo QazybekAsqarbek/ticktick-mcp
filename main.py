@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 from ticktick_api import TickTickAPI
-from db import MongoDB
+from db import TickTickDB
 from dotenv import load_dotenv
 import os
 
@@ -17,10 +17,7 @@ class TickTickDataManager:
     def __init__(self):
         load_dotenv()
         self.api = TickTickAPI()
-        self.db = MongoDB(
-            uri=os.getenv("MONGODB_URI"),
-            db_name=os.getenv("MONGODB_DB_NAME", "ticktick")
-        )
+        self.db = TickTickDB()
         self.max_retries = 3
         self.retry_delay = 60  # seconds
     

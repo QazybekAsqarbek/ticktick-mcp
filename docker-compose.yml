@@ -9,9 +9,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
-    command: mongod --auth --quiet --logpath /dev/null
-    logging:
-      driver: "none"
+    command: mongod --auth --quiet
     networks:
       - ticktick-network
     healthcheck:
@@ -29,20 +27,15 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - MONGODB_URI=mongodb://admin:password@mongodb:27017/
-      - PYTHONUNBUFFERED=1
     volumes:
       - ./logs:/app/logs:delegated
       - ./:/app:cached
+      - ./prompts:/app/prompts:cached
     networks:
       - ticktick-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import pymongo; pymongo.MongoClient('mongodb://admin:password@mongodb:27017/').admin.command('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    stdin_open: true
+    tty: true
+    command: tail -f /dev/null
 
 volumes:
   mongodb_data:

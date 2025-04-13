@@ -12,6 +12,7 @@ import sys
 import os
 import time
 from tenacity import retry, stop_after_attempt, wait_exponential
+from settings import settings
 
 # Create logs directory if it doesn't exist
 os.makedirs('/app/logs', exist_ok=True)
@@ -32,11 +33,17 @@ class TickTickManager:
         """Initialize TickTick manager
         
         Args:
-            mongo_uri: MongoDB connection URI, defaults to environment variable
+            mongo_uri: MongoDB connection URI, defaults to settings
         """
         self.db = TickTickDB(mongo_uri)
         self.api = TickTickAPI()
         self.logger = logging.getLogger(__name__)
+        
+        # Get debug projects from settings
+        debug_projects = settings.DEBUG_PROJECTS.split(",")
+        self.debug_projects = [p.strip() for p in debug_projects if p.strip()]
+        if self.debug_projects:
+            self.logger.info(f"Debug mode enabled. Working with projects: {', '.join(self.debug_projects)}")
     
     async def _validate_cache(self, items: List[Dict[str, Any]], item_type: str) -> bool:
         """Validate cached items
@@ -163,12 +170,17 @@ class TickTickManager:
             # Get all projects
             projects = await self.db.get_projects()
             
+            if self.debug_projects:
+                # Filter projects based on DEBUG_PROJECTS
+                projects = [p for p in projects if p.get("name") in self.debug_projects]
+                if not projects:
+                    self.logger.error(f"No debug projects found. Looking for: {', '.join(self.debug_projects)}")
+                    return
+                self.logger.info(f"Found {len(projects)} debug projects to sync")
+            
             # Sync tasks for each project
             for project in projects:
                 await self.sync_tasks(project_id=project["id"], cache_duration=cache_duration)
-            
-            # Sync notes
-            await self.sync_notes(cache_duration)
             
             self.logger.info("Successfully synced all data")
         except Exception as e:
